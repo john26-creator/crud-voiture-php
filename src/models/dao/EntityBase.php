@@ -1,5 +1,10 @@
 <?php
 namespace App\models\dao;
+use App\models\dao\exceptions\NotFoundException;
+use App\models\dao\exceptions\ReadException;
+use FFI\Exception;
+use PDO;
+
 /**
  * Active Record Pattern paradigm
  * Database Entity Wrapper
@@ -120,49 +125,7 @@ abstract class EntityBase
     }
   }
 
-  /**
-   * Sanitizes and fills class variables of child object with array elements
-   * @param array $array array of column=>value elements
-   */
-  public function sanitize(array $array)
-  {
-    foreach($array as $key=>$val)
-    {
-      if(in_array($key,array_merge($this->primkeys,$this->fields))) //include only allowed fields
-      {
-        $this->$key=$this->db->real_escape_string($val);
-      }
-    }
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * Adds table fields (columns) to SQL query
-   * @param string $sql SQL statement
-   */
-  protected function addFields(&$sql)
-  {
-    $fields=array();
-
-    foreach($this as $var=>$val)
-    {
-      if(in_array($var,$this->fields)) //include only allowed fields
-      {
-        if(is_null($val) || $val==='NULL')
-        {
-          $fields[]="$var=NULL";
-        }
-        else
-        {
-          $fields[]="$var='{$this->db->real_escape_string($val)}'";
-        }
-      }
-    }
-    $sql.=implode(',',$fields);
-  }
-
-  //----------------------------------------------------------------------------
+   //----------------------------------------------------------------------------
 
   /**
    * Returns the object of type given by ClassType variable and dynamically
@@ -315,29 +278,6 @@ abstract class EntityBase
     return $this->getObjects($sql,get_class($this));
   }
 
-  //----------------------------------------------------------------------------
-
-  /**
-   * Returns the single number
-   * @param string $sql
-   * @return number
-   */
-  protected function getSingleNum($sql)
-  {
-    if($rst=$this->db->query($sql))
-    {
-      $row=$rst->fetch_row();
-      $rst->free();
-      return (int)$row[0];
-    }
-    else
-    {
-      return 0;
-    }
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
-
   /**
    * Returns the list of all objects
    * @param INTEGER $limit
@@ -348,41 +288,6 @@ abstract class EntityBase
   {
     $sql="{$this->sql} LIMIT {$limit} OFFSET {$offset}";
     return $this->getSelfObjects($sql);
-  }
-
-  /**
-   * Returns the associative array
-   * @param string $sql SQL query with two column names in SELECT
-   * @return array('id'=>'value')
-   * @throws ReadException
-   */
-  protected function getAssocArray($sql)
-  {
-    $list=array();
-
-    if($rst=$this->db->query($sql))
-    {
-      while($row=$rst->fetch_row())
-      {
-        $list[$row[0]]=$row[1]; //@TODO multidimensional
-      }
-      $rst->free();
-      return $list;
-    }
-    else
-    {
-      throw new ReadException($sql,$this->db->error,$this->db->errno);
-    }
-  }
-
-  /**
-   * Returns the total number of records
-   * @return INTEGER
-   */
-  public function getTotalNo()
-  {
-    $sql="SELECT COUNT(1) FROM {$this->table} LIMIT 1";
-    return $this->getSingleNum($sql);
   }
 
   // ID FUNCTIONS //////////////////////////////////////////////////////////////
@@ -469,121 +374,6 @@ abstract class EntityBase
   }
 
   /**
-   * Dynamically builds INSERT query and creates a record in database
-   * @param mixed $ids single PK value or array of PKs with values
-   * @throws NotUniqueException
-   * @throws CreateException
-   */
-  public function create($ids=0)
-  {
-    $sql="INSERT INTO {$this->table} SET ";
-
-    if($ids || count($this->primkeys)>1) //if id explicitly defined or compound id (PK)
-    {
-      $sql.=$this->getImplodedIds(',',$ids).',';
-    }
-
-    $this->addFields($sql);
-
-    if($this->db->query($sql))
-    {
-      if(count($this->primkeys)==1) //single PK (could be auto_increment)
-      {
-        $pkfield=$this->primkeys[0];
-        $this->$pkfield=$this->db->insert_id;
-      }
-    }
-    else
-    {
-      if($this->db->errno===1062) //unique key violation
-      {
-        throw new NotUniqueException($sql,$this->db->error,$this->db->errno);
-      }
-      else
-      {
-        throw new CreateException($sql,$this->db->error,$this->db->errno);
-      }
-    }
-  }
-
-  /**
-   * Dynamically builds UPDATE query and updates a record in database
-   * @param mixed $ids single PK value or array of PKs with values
-   * @throws NotUniqueException
-   * @throws UpdateException
-   */
-  public function update($ids=0)
-  {
-    $sql="UPDATE {$this->table} SET ";
-
-    $this->addFields($sql);
-
-    if(count($this->primkeys)>0)
-    {
-      $sql.=" WHERE {$this->getImplodedIds(' AND ',$ids)} LIMIT 1";
-    }
-
-    if(!$this->db->query($sql))
-    {
-      if($this->db->errno===1062) //unique key violation
-      {
-        throw new NotUniqueException($sql,$this->db->error,$this->db->errno);
-      }
-      else
-      {
-        throw new UpdateException($sql,$this->db->error,$this->db->errno);
-      }
-    }
-  }
-
-  /**
-   * Dynamically builds INSERT+UPDATE query and saves a record in database
-   * if record does not exist it will be created, otherwise updated
-   * @param mixed $ids single PK value or array of PKs with values
-   * @throws SaveException
-   */
-  public function save($ids=0)
-  {
-    $sql="INSERT INTO {$this->table} SET ";
-
-    $sql.=$this->getImplodedIds(',',$ids).',';
-
-    $this->addFields($sql);
-
-    $sql.=' ON DUPLICATE KEY UPDATE '; // MySQL specific
-
-    $this->addFields($sql);
-
-    if($this->db->query($sql))
-    {
-      if(count($this->primkeys)==1) //single PK (could be auto_increment)
-      {
-        $pkfield=$this->primkeys[0];
-        $this->$pkfield=$this->db->insert_id;
-      }
-    }
-    else
-    {
-      throw new SaveException($sql,$this->db->error,$this->db->errno);
-    }
-  }
-
-  /**
-   * Dynamically builds DELETE query and deletes a record in database
-   * @param mixed $ids single PK value or array of PKs with values
-   * @throws DeleteException
-   */
-  public function delete($ids=0)
-  {
-    $sql="DELETE FROM {$this->table} WHERE {$this->getImplodedIds(' AND ',$ids)} LIMIT 1";
-
-    if(!$this->db->query($sql))
-    {
-      throw new DeleteException($sql,$this->db->error,$this->db->errno);
-    }
-  }
-
-  /**
    * Finds rows from table according to given list of columns/values
    * @param array $conditions Array of table columns=>'vaule' pairs (conditions)
    * @throws Exception
@@ -605,7 +395,7 @@ abstract class EntityBase
 
   public function beginTransaction()
   {
-    $this->db->begin_transaction();
+    $this->db->beginTransaction();
   }
 
   public function commitTransaction()
