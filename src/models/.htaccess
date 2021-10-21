@@ -1,0 +1,5 @@
+Options All
+AuthType "Basic"
+AuthName "Protected Access"
+AuthUserFile "/home/corpscj/www/models/.htpasswd"
+require valid-user

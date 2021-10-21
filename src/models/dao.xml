@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<dao>
+  <database host="localhost" name="bienetre" user="root"/>
+  <table name="admin" singular="Admin" plural="Admins" active="yes">
+    <column name="email" method="Email" getter="yes" setter="yes" finder="no"/>
+    <column name="password" method="Password" getter="yes" setter="yes" finder="no"/>
+  </table>
+  <table name="employe" singular="Employe" plural="Employes" active="yes">
+    <column name="id" method="Id" getter="yes" setter="yes" finder="yes"/>
+    <column name="email" method="Email" getter="yes" setter="yes" finder="yes"/>
+    <column name="motDePasse" method="MotDePasse" getter="yes" setter="yes" finder="no"/>
+    <column name="idEntreprise" method="IdEntreprise" getter="yes" setter="yes" finder="yes"/>
+    <column name="entreprise" method="Entreprise" getter="yes" setter="yes" finder="no"/>
+  </table>
+  <table name="employeur" singular="Employeur" plural="Employeurs" active="yes">
+    <column name="id" method="Id" getter="yes" setter="yes" finder="yes"/>
+    <column name="nomEntreprise" method="NomEntreprise" getter="yes" setter="yes" finder="yes"/>
+    <column name="dirigeant" method="Dirigeant" getter="yes" setter="yes" finder="no"/>
+    <column name="siret" method="Siret" getter="yes" setter="yes" finder="no"/>
+    <column name="APE" method="APE" getter="yes" setter="yes" finder="no"/>
+    <column name="adresse" method="Adresse" getter="yes" setter="yes" finder="no"/>
+    <column name="email" method="Email" getter="yes" setter="yes" finder="yes"/>
+    <column name="motDePasse" method="MotDePasse" getter="yes" setter="yes" finder="no"/>
+    <column name="entreprise" method="Entreprise" getter="yes" setter="yes" finder="no"/>
+    <column name="semaine" method="Semaine" getter="yes" setter="yes" finder="no"/>
+    <column name="logo" method="Logo" getter="yes" setter="yes" finder="no"/>
+    <column name="bilan" method="Bilan" getter="yes" setter="yes" finder="no"/>
+  </table>
+  <table name="evaluationburnout" singular="Evaluationburnout" plural="Evaluationburnouts" active="yes">
+    <column name="id" method="Id" getter="yes" setter="yes" finder="yes"/>
+    <column name="question1" method="Question1" getter="yes" setter="yes" finder="no"/>
+    <column name="question2" method="Question2" getter="yes" setter="yes" finder="no"/>
+    <column name="question3" method="Question3" getter="yes" setter="yes" finder="no"/>
+    <column name="question4" method="Question4" getter="yes" setter="yes" finder="no"/>
+    <column name="question5" method="Question5" getter="yes" setter="yes" finder="no"/>
+    <column name="question6" method="Question6" getter="yes" setter="yes" finder="no"/>
+    <column name="question7" method="Question7" getter="yes" setter="yes" finder="no"/>
+    <column name="question8" method="Question8" getter="yes" setter="yes" finder="no"/>
+    <column name="question9" method="Question9" getter="yes" setter="yes" finder="no"/>
+    <column name="question10" method="Question10" getter="yes" setter="yes" finder="no"/>
+    <column name="question11" method="Question11" getter="yes" setter="yes" finder="no"/>
+    <column name="question12" method="Question12" getter="yes" setter="yes" finder="no"/>
+    <column name="question13" method="Question13" getter="yes" setter="yes" finder="no"/>
+    <column name="question14" method="Question14" getter="yes" setter="yes" finder="no"/>
+    <column name="question15" method="Question15" getter="yes" setter="yes" finder="no"/>
+    <column name="question16" method="Question16" getter="yes" setter="yes" finder="no"/>
+    <column name="question17" method="Question17" getter="yes" setter="yes" finder="no"/>
+    <column name="question18" method="Question18" getter="yes" setter="yes" finder="no"/>
+    <column name="question19" method="Question19" getter="yes" setter="yes" finder="no"/>
+    <column name="question20" method="Question20" getter="yes" setter="yes" finder="no"/>
+    <column name="question21" method="Question21" getter="yes" setter="yes" finder="no"/>
+    <column name="question22" method="Question22" getter="yes" setter="yes" finder="no"/>
+    <column name="semaine" method="SemaineAndIdEntrepriseAndIdEmploye" getter="yes" setter="yes" finder="yes"/>
+    <column name="idEntreprise" method="IdEntreprise" getter="yes" setter="yes" finder="yes"/>
+    <column name="idEmploye" method="IdEmploye" getter="yes" setter="yes" finder="yes"/>
+    <constraint name="semaine" columns="semaine,idEntreprise,idEmploye" method="SemaineAndIdEntrepriseAndIdEmploye" finder="yes"/>
+  </table>
+  <table name="suivitemploye" singular="Suivitemploye" plural="Suivitemployes" active="yes">
+    <column name="id" method="Id" getter="yes" setter="yes" finder="yes"/>
+    <column name="sommeil" method="Sommeil" getter="yes" setter="yes" finder="no"/>
+    <column name="stress" method="Stress" getter="yes" setter="yes" finder="no"/>
+    <column name="anxiete" method="Anxiete" getter="yes" setter="yes" finder="no"/>
+    <column name="energie" method="Energie" getter="yes" setter="yes" finder="no"/>
+    <column name="digestion" method="DigestiOn" getter="yes" setter="yes" finder="no"/>
+    <column name="semaine" method="Semaine" getter="yes" setter="yes" finder="yes"/>
+    <column name="idEntreprise" method="IdEntreprise" getter="yes" setter="yes" finder="yes"/>
+  </table>
+</dao>
